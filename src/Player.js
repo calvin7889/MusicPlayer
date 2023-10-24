@@ -1,19 +1,22 @@
 import React, {useRef, useState} from "react"
 import {View, Text, SafeAreaView, FlatList, Image, StyleSheet, Dimensions, TouchableOpacity} from "react-native"
 import songs from "./data";
+import Controller from "./Controller";
 
 export default function Player() {
-    // const [isAtEnd, setIsAtEnd] = useState(false);
-    const flatListRef = useRef(FlatList);
-    const nextPress = (index) => {
 
+    const [index, setIndex] = useState(0);
+    const flatListRef = useRef(FlatList);
+    const nextPress = () => {
+        setIndex(index+1)
         flatListRef?.current?.scrollToIndex({
             animated: true,
             index: index + 1
         });
     }
-    const prevPress = (index) => {
+    const prevPress = () => {
         if (index != 0) {
+            setIndex(index-1)
             flatListRef?.current?.scrollToIndex({
                 animated: true,
                 index: index - 1
@@ -25,6 +28,9 @@ export default function Player() {
 
     return (
         <SafeAreaView>
+            <View style={styles.header}>
+                <Text>Liked Songs</Text>
+            </View>
             <FlatList data={songs}
                       scrollEnabled={false}
                       horizontal={true}
@@ -33,34 +39,19 @@ export default function Player() {
                       snapToInterval={Dimensions.get("window").width}
                       keyExtractor={(item, _) => item.id}
                       ref={flatListRef}
-                      // onEndReached={() => setIsAtEnd(true)}
-                      renderItem={({item, index}) =>
+                      renderItem={({item}) =>
                           <View style={styles.container}>
-                              <View style={styles.header}>
-                                  <Text>Liked Songs</Text>
-                              </View>
                               <View style={styles.x}>
                                   <Image source={item.image} resizeMode={"contain"} style={styles.image}/>
                                   <View style={styles.songInfo}>
                                       <Text style={styles.title}>{item.title}</Text>
                                       <Text style={styles.artist}>{item.artist}</Text>
                                   </View>
-                                  <View style={styles.controllerContainer}>
-                                      <TouchableOpacity onPress={()=>prevPress(index)} style={styles.button}>
-                                        <Image source={require("../assets/prev.png")} resizeMode={"contain"} style={styles.button2}/>
-                                      </TouchableOpacity>
-                                      <TouchableOpacity onPress={()=>console.log("do nothing")} style={styles.button}>
-                                          <Image source={require("../assets/pause.png")} resizeMode={"contain"} style={styles.button2}/>
-                                      </TouchableOpacity>
-                                      <TouchableOpacity onPress={()=>nextPress(index)} style={styles.button}>
-                                          <Image source={require("../assets/next.png")} resizeMode={"contain"} style={styles.button2}/>
-                                      </TouchableOpacity>
-                                  </View>
                               </View>
-
                           </View>
             }
             />
+            <Controller hidePrev={index == 0} hideNext={index == songs.length - 1} nextPress={() => nextPress()} prevPress={() => prevPress()}/>
         </SafeAreaView>
         )
 }
@@ -71,11 +62,17 @@ const styles = StyleSheet.create({
         aspectRatio:"1/1",
         marginVertical:40
     },
+    header: {
+      alignItems:"center"
+    },
 
     button: {
         width:"20%",
         height:"auto",
         aspectRatio:"1/1",
+    },
+    hide: {
+        opacity:0
     },
     button2: {
         width:"100%",
@@ -83,7 +80,6 @@ const styles = StyleSheet.create({
         aspectRatio:"1/1",
     },
     container: {
-        height:Dimensions.get("window").height,
         width:Dimensions.get("window").width,
         // justifyContent:"center",
         alignItems:'center',
